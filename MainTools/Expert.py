@@ -1,6 +1,6 @@
 import json
 import random
-from LLM import Qwen, GLM
+from LLM import Qwen, GLM, Deepseek
 import time
 from LLM.Meta_LLM import LargeLanguageModel
 from pthcfg import PathConfig
@@ -27,9 +27,13 @@ def init_raw_experts(llmName=None, debug=False, llmType='ChatGLM4Flash') -> Larg
         llm_ = Qwen.QWQ_plus(llmName)
         if llmName is not None:
             llm_.llm_name = llmName
+    elif llmType == 'Deepseek_R1':
+        llm_ = Deepseek.Deepseek_R1(llmName)
+        if llmName is not None:
+            llm_.llm_name = llmName
     else:
-        raise ValueError("llmType参数错误, llmType应该包含在如下列表中：[ChatGLM4Flash, Qwen, QWQ]")
-    llm_.init_log_pth(os.path.join(pthcfg.log_pth, f"{llmType}|{llm_.llm_name}.txt"))
+        raise ValueError("llmType参数错误, llmType应该包含在如下列表中：[ChatGLM4Flash, Qwen, QWQ, QWQ_plus, Deepseek-R1]")
+    llm_.init_log_pth(os.path.join(pthcfg.log_pth, f"{llmType}-{llm_.llm_name}.txt"))
     llm_.open_history_log()
     if debug:
         llm_.open_debug_mode()

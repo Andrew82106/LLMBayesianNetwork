@@ -208,8 +208,9 @@ if __name__ == '__main__':
     NUM_OF_EXPERT_ = 10
     # LLM_TYPE_ = "ChatGLM4Flash"
     # LLM_TYPE_ = "Qwen"
-    # LLM_TYPE_ = "QWQ"
-    LLM_TYPE_ = "QWQ_plus"
+    # LLM_TYPE_ = "Deepseek-R1"
+    LLM_TYPE_ = "QWQ"
+    # LLM_TYPE_ = "QWQ_plus"
     KNOWLEDGE_INSERT_METHOD_ = "DEFAULT"
     # KNOWLEDGE_INSERT_METHOD_ = "ASSERT"
     # KNOWLEDGE_INSERT_METHOD_ = "DESCRIBE"
