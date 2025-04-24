@@ -1,0 +1,9 @@
+pandas
+pgmpy
+networkx
+numpy
+openai
+matplotlib
+pgmpy~=0.1.17
+zhipuai
+requests
