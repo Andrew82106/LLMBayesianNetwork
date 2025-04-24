@@ -196,8 +196,108 @@ def main(
         pickle.dump(labData, f)
 
 
+def generateExpertResult():
+    """
+    生成专家结果
+    """
+
+    # 定义目标和专家类型列表
+    aimList = ['Victim', "Criminal"]
+    expertTypeList = ['human']
+    ISM_EPS_ = 4
+    DS_EPS_ = 0.15
+    # 用于存储不同目标和专家类型生成的图模型
+    graphs = {}
+    labData = {
+        "parameter": {
+            "DS_REFRESH": 0,
+            "NUM_OF_EXPERT": 0,
+            "LLM_TYPE": 0,
+            "KNOWLEDGE_INSERT_METHOD": 0,
+            "DEBUG": 0,
+            "ISM_REFRESH": 0,
+            "ISM_EPS": ISM_EPS_,
+            "DS_EPS": DS_EPS_
+        },
+        "result": {
+            "ismResult": {},
+            "dsResult": {}
+        },
+        "processData": {
+            "ismDetailResult": {},
+            'K2Model': {},
+            "dsDetailResult": {}
+        }
+    }
+    # 遍历所有目标和专家类型组合
+    for aim in aimList:
+        # 加载数据，获取节点名称、节点信息、映射关系等
+        nodesNameLst, nodesInfoLst, Map, Map2English = dataLoader(aim=aim)
+
+        # 初始化专家列表
+        ismExpertList = []
+        DSExpertList = []
+        print("in main function: 使用ISM方法生成ISM结果")
+        # 使用ISM方法生成ISM结果
+        ismResult, raw_connections = ismApproach(
+            nodesNameLst=nodesNameLst,
+            nodesInfoLst=nodesInfoLst,
+            aim=aim,
+            expertType="human",
+            Debug=0,
+            expert_list=ismExpertList,
+            refresh=0,
+            eps=ISM_EPS_
+        )
+        labData['result']['ismResult'] = ismResult
+        labData['processData']['ismDetailResult'] = raw_connections
+
+        print("ISM方法生成ISM结果完毕")
+        # 使用K2算法处理ISM结果，生成贝叶斯网络模型
+        model = k2Process(Map, Map2English, ismResult[str(aim) +"human"], os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled.csv'))
+        visualize_bayesian_network(bn_structure_=list(model.edges()),
+                                   savepath=os.path.join(pthcfg.log_pth, f"K2_{aim}_human.png"))
+        labData['processData']['K2Model'][str(aim) + "human"] = list(model.edges())
+
+        # 使用DS算法进一步处理模型，生成DS模型
+        print("开始调用DS算法生成网络结构")
+        DS_model, ExpertOpinions, DS_result = dsApproach(
+            expertType="human",
+            nodesNameLst=nodesNameLst,
+            nodesInfoLst=nodesInfoLst,
+            Map2English=Map2English,
+            model=model,
+            Debug=0,
+            refresh=0,
+            eps=DS_EPS_,
+            expertList=DSExpertList,
+            aim=aim
+        )
+        labData['result']['dsResult'][str(aim) + "Expert"] = DS_model
+        labData['processData']['dsDetailResult'][str(aim) + "human"] = {
+            "ExpertOpinions": ExpertOpinions,
+            "DS_funsion_result": DS_result
+        }
+        print("DS算法生成网络结构完毕")
+        # 可视化并保存DS模型结构
+        visualize_bayesian_network(bn_structure_=list(DS_model.edges()),
+                                   savepath=os.path.join(pthcfg.log_pth, f"DS_{aim}_human.png"))
+
+        # 将生成的模型存储在graphs字典中
+        graphs[aim + "human"] = [model, DS_model]
+
+    labData['result']['Graph'] = graphs
+    # save with pickle
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData[time={date}].pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
+        pickle.dump(labData, f)
+
+
+
 
 if __name__ == '__main__':
+    generateExpertResult()
+    exit(0)
     ###############################################DASHBOARD#################################################
     DS_REFRESH_ = 0
     ISM_REFRESH_ = 0
