@@ -27,7 +27,7 @@ def init_raw_experts(llmName=None, debug=False, llmType='ChatGLM4Flash') -> Larg
         llm_ = Qwen.QWQ_plus(llmName)
         if llmName is not None:
             llm_.llm_name = llmName
-    elif llmType == 'Deepseek_R1':
+    elif llmType == 'Deepseek-R1':
         llm_ = Deepseek.Deepseek_R1(llmName)
         if llmName is not None:
             llm_.llm_name = llmName
