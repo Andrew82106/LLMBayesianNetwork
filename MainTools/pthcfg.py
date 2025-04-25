@@ -32,6 +32,9 @@ class PathConfig:
         sys.path.append(self.cache_path)
         sys.path.append(self.log_pth)
 
+        if not os.path.exists(self.log_pth):
+            os.makedirs(self.log_pth)
+
 
 if __name__ == '__main__':
     print(PathConfig().root_path)

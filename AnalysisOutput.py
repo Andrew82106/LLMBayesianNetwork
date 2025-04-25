@@ -1,3 +1,5 @@
+import time
+
 from MainTools.pthcfg import PathConfig
 
 cfg = PathConfig()
@@ -26,7 +28,7 @@ def generateLLMResult(filename):
 
 
 def generateExpertResult(filename):
-    result = readOutputPkl(filename)
+    result = readOutputPkl(os.path.join(cfg.final_output_path, filename))
     pprint.pprint(result['parameter'])
     visualize_multiple_bayesian_networks(
         [result['result']['Graph']['Victimhuman'][0],
@@ -53,6 +55,6 @@ evaluateResult = evaluateGraph(
     'Loss',
     os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
     test_size=0.3,
-    random_state=42
+    random_state=(time.time_ns())%4294967295
 )
 print(evaluateResult)

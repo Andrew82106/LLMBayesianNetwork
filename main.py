@@ -254,7 +254,12 @@ def generateExpertResult():
 
         print("ISM方法生成ISM结果完毕")
         # 使用K2算法处理ISM结果，生成贝叶斯网络模型
-        model = k2Process(Map, Map2English, ismResult[str(aim) +"human"], os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled.csv'))
+        if aim == "Victim":
+            model = k2Process(Map, Map2English, ismResult[str(aim) +"human"], os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled_original.csv'))
+        else:
+            model = k2Process(Map, Map2English, ismResult[str(aim) + "human"],
+                              os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled_original.csv'))
+
         visualize_bayesian_network(bn_structure_=list(model.edges()),
                                    savepath=os.path.join(pthcfg.log_pth, f"K2_{aim}_human.png"))
         labData['processData']['K2Model'][str(aim) + "human"] = list(model.edges())
@@ -289,7 +294,7 @@ def generateExpertResult():
     labData['result']['Graph'] = graphs
     # save with pickle
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData_time={date}.pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
+    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData_time_{date}.pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
         pickle.dump(labData, f)
 
 
