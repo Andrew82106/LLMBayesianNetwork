@@ -55,6 +55,6 @@ evaluateResult = evaluateGraph(
     'Loss',
     os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
     test_size=0.3,
-    random_state=(time.time_ns())%4294967295
+    random_state=(time.time_ns()) % 4294967295
 )
 print(evaluateResult)
