@@ -68,29 +68,29 @@ def evaluateF1(aimGraph: BayesianNetwork, dataPath: str, epsList=[0.1, 0.2, 0.3,
 def evaluateRandomForest(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
     res_list = []
     for eps in epsList:
-        res = randomForestPredict(dataPath, aimColumn, test_size=eps)
-        res_list.append({"result": res, "eps": eps})
+        res_ = randomForestPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
     return res_list
 
 def evaluateDecisionTree(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
     res_list = []
     for eps in epsList:
-        res = decisionTreePredict(dataPath, aimColumn, test_size=eps)
-        res_list.append({"result": res, "eps": eps})
+        res_ = decisionTreePredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
     return res_list
 
 def evaluateKNN(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
     res_list = []
     for eps in epsList:
-        res = knnPredict(dataPath, aimColumn, test_size=eps)
-        res_list.append({"result": res, "eps": eps})
+        res_ = knnPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
     return res_list
 
 def evaluateSVM(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
     res_list = []
     for eps in epsList:
-        res = svmPredict(dataPath, aimColumn, test_size=eps)
-        res_list.append({"result": res, "eps": eps})
+        res_ = svmPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
     return res_list
 
 
