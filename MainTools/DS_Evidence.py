@@ -307,7 +307,10 @@ def dsApproach(
 
     elif expertType == 'human':
         # 加载人类专家意见
-        opinions = json.load(open(os.path.join(pthcfg.assets_path, 'OpiniondataCrime.json'), 'r'))
+        if aim == "Victim":
+            opinions = json.load(open(os.path.join(pthcfg.assets_path, 'OpiniondataVicitim.json'), 'r'))
+        else:
+            opinions = json.load(open(os.path.join(pthcfg.assets_path, 'OpiniondataCrime.json'), 'r'))
         # 使用人类专家进行D-S证据理论处理
         DS_result, expert_opinions_ = D_S_Experts_human(
             Graph=list(model.edges()),
@@ -319,9 +322,10 @@ def dsApproach(
         for edge in DS_result:
             if DS_result[edge]['保留边'] < eps < DS_result[edge]['删除边']:
                 model_new.remove_edge(edge[0], edge[1])
+                print(f"in DS_Evidence, 边 {edge} 被删除")
             if DS_result[edge]['删除边'] < eps < DS_result[edge]['保留边']:
                 model_new.add_edge(edge[0], edge[1])
-
+                print(f"in DS_Evidence, 边 {edge} 被保留")
         return model_new, expert_opinions_, DS_result
 
     else:

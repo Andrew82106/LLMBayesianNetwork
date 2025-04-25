@@ -42,7 +42,6 @@ def main(
         REFREFRESH_ISM_EXPERT = 1
         REFREFRESH_DS_EXPERT = 1
 
-
     # 定义目标和专家类型列表
     aimList = ['Victim', "Criminal"]
     expertTypeList = ['llm', 'human']
@@ -141,7 +140,8 @@ def main(
             # 使用K2算法处理ISM结果，生成贝叶斯网络模型
             if DEBUG:
                 print("开始调用K2算法生成网络结构")
-            model = k2Process(Map, Map2English, ismResult[str(aim) + str(expertType)], os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled.csv'))
+            model = k2Process(Map, Map2English, ismResult[str(aim) + str(expertType)],
+                              os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled.csv'))
             visualize_bayesian_network(bn_structure_=list(model.edges()),
                                        savepath=os.path.join(pthcfg.log_pth, f"K2_{aim}:{expertType}.png"))
             labData['processData']['K2Model'][str(aim) + str(expertType)] = list(model.edges())
@@ -196,16 +196,13 @@ def main(
         pickle.dump(labData, f)
 
 
-def generateExpertResult():
+def generateExpertResult(ISM_EPS_ = 4, DS_EPS_=0.35):
     """
     生成专家结果
     """
 
     # 定义目标和专家类型列表
     aimList = ['Victim', "Criminal"]
-    expertTypeList = ['human']
-    ISM_EPS_ = 4
-    DS_EPS_ = 0.15
     # 用于存储不同目标和专家类型生成的图模型
     graphs = {}
     labData = {
@@ -255,7 +252,8 @@ def generateExpertResult():
         print("ISM方法生成ISM结果完毕")
         # 使用K2算法处理ISM结果，生成贝叶斯网络模型
         if aim == "Victim":
-            model = k2Process(Map, Map2English, ismResult[str(aim) +"human"], os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled_original.csv'))
+            model = k2Process(Map, Map2English, ismResult[str(aim) + "human"],
+                              os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled_original.csv'))
         else:
             model = k2Process(Map, Map2English, ismResult[str(aim) + "human"],
                               os.path.join(pthcfg.database_path, 'bayesian_victim_and_others_filled_original.csv'))
@@ -294,22 +292,19 @@ def generateExpertResult():
     labData['result']['Graph'] = graphs
     # save with pickle
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData_time_{date}.pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
+    with open(os.path.join(pthcfg.final_output_path,
+                           f'ExpertResult_labData_time_{date}.pkl'.replace(":", "_").replace(" ", "")), 'wb') as f:
         pickle.dump(labData, f)
 
 
-
-
 if __name__ == '__main__':
-    generateExpertResult()
-    exit(0)
     ###############################################DASHBOARD#################################################
     DS_REFRESH_ = 0
     ISM_REFRESH_ = 0
     REFREFRESH_ISM_EXPERT_ = 0
     REFREFRESH_DS_EXPERT_ = 0
     ISM_EPS_ = 4
-    DS_EPS_ = 0.15
+    DS_EPS_ = 0.5
     NUM_OF_EXPERT_ = 10
     # LLM_TYPE_ = "ChatGLM4Flash"
     # LLM_TYPE_ = "Qwen"
@@ -322,18 +317,21 @@ if __name__ == '__main__':
     # KNOWLEDGE_INSERT_METHOD_ = "RELATIONSHIP"
     DEBUG_ = True
     REFRESH_ = False
+    MODE = "Expert"
     ###############################################DASHBOARD#################################################
-
-    main(
-        REFRESH=REFRESH_,
-        DS_REFRESH=DS_REFRESH_,
-        ISM_REFRESH=ISM_REFRESH_,
-        REFREFRESH_ISM_EXPERT=REFREFRESH_ISM_EXPERT_,
-        REFREFRESH_DS_EXPERT=REFREFRESH_DS_EXPERT_,
-        ISM_EPS=ISM_EPS_,
-        DS_EPS=DS_EPS_,
-        NUM_OF_EXPERT=NUM_OF_EXPERT_,
-        LLM_TYPE=LLM_TYPE_,
-        KNOWLEDGE_INSERT_METHOD=KNOWLEDGE_INSERT_METHOD_,
-        DEBUG=DEBUG_
-    )
+    if MODE == 'Expert':
+        generateExpertResult(ISM_EPS_=ISM_EPS_, DS_EPS_=DS_EPS_)
+    else:
+        main(
+            REFRESH=REFRESH_,
+            DS_REFRESH=DS_REFRESH_,
+            ISM_REFRESH=ISM_REFRESH_,
+            REFREFRESH_ISM_EXPERT=REFREFRESH_ISM_EXPERT_,
+            REFREFRESH_DS_EXPERT=REFREFRESH_DS_EXPERT_,
+            ISM_EPS=ISM_EPS_,
+            DS_EPS=DS_EPS_,
+            NUM_OF_EXPERT=NUM_OF_EXPERT_,
+            LLM_TYPE=LLM_TYPE_,
+            KNOWLEDGE_INSERT_METHOD=KNOWLEDGE_INSERT_METHOD_,
+            DEBUG=DEBUG_
+        )
