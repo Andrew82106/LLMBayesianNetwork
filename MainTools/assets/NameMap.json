@@ -1,0 +1,31 @@
+{
+  "trainDatasetEng2Chi":
+  {
+    "Victim": {
+      "SpecialDate": "案发日期敏感度_code",
+      "VictimOccupation": "工作大类_code",
+      "VictimSex": "相关人性别_code",
+      "VictimAge": " 相关人年龄_code",
+      "VictimIncome": "相关人收入_code",
+      "VictimEducation": "相关人学历_code",
+      "CommunicationMethod": "相关人通信方式_code",
+      "Loss": "金额损失_code",
+      "RecoverTime": "相关人恢复时间_code",
+      "CallPolice": "是否报警_code",
+      "CityEconomy": "案发城市经济水平_code"
+    },
+    "Criminal": {
+      "SpecialDate": "案发日期敏感度_code",
+      "SuspectOccupation": "工作大类_code",
+      "SuspectGender": "相关人性别_code",
+      "SuspectAge": "相关人年龄_code",
+      "SuspectAbility": "相关人收入_code",
+      "SuspectEducation": "相关人学历_code",
+      "CommunicationMethod": "相关人通信方式_code",
+      "Loss": "金额损失_code",
+      "RecoverTime": "相关人恢复时间_code",
+      "CallPolice": "是否报警_code",
+      "CityEconomy": "案发城市经济水平_code"
+    }
+  }
+}

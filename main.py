@@ -192,7 +192,7 @@ def main(
     labData['result']['Graph'] = graphs
     # save with pickle
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(os.path.join(pthcfg.final_output_path, f'labData[time={date}].pkl'), 'wb') as f:
+    with open(os.path.join(pthcfg.final_output_path, f'labData_time={date}_.pkl'), 'wb') as f:
         pickle.dump(labData, f)
 
 
@@ -289,7 +289,7 @@ def generateExpertResult():
     labData['result']['Graph'] = graphs
     # save with pickle
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData[time={date}].pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
+    with open(os.path.join(pthcfg.final_output_path, (f'ExpertResult_labData_time={date}.pkl').replace(":", "_").replace(" ", "")), 'wb') as f:
         pickle.dump(labData, f)
 
 

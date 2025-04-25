@@ -2,6 +2,13 @@ import json
 from pgmpy.readwrite import BIFReader
 from pgmpy.models.BayesianNetwork import BayesianNetwork
 from pthcfg import *
+import pickle as pkl
+
+
+def readOutputPkl(filename):
+    with open(filename, 'rb') as f:
+        content = pkl.load(f)
+    return content
 
 
 def read_json_file(file_path):
