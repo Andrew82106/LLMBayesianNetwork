@@ -50,7 +50,7 @@ aimGraph: BayesianNetwork = expertResult['result']['Graph']['Criminalhuman'][1]
 aimGraph.remove_node("CallPolice")
 evaluateResult = evaluateGraph(
     aimGraph,
-    '金额损失_code',
+    'Loss',
     os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
     test_size=0.3,
     random_state=42

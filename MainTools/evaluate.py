@@ -43,7 +43,7 @@ def graphSelfEvaluate(bnn: BayesianNetwork,
     """
 
     # 读取列名表
-    column_map = loadMap(role='Criminal', mode='chi2eng')
+    # column_map = loadMap(role='Criminal', mode='chi2eng')
     # 读取数据
     data = pd.read_csv(dataPath)
     # 取出在column_map中的列
@@ -54,7 +54,7 @@ def graphSelfEvaluate(bnn: BayesianNetwork,
     # 取出在bnnNodeList中的列
     data = data[[i for i in data.columns if i in bnnNodeList]]
 
-    aimColumn = column_map[aimColumn]
+    # aimColumn = column_map[aimColumn]
 
     # 校验目标列是否存在
     if aimColumn not in data.columns:
