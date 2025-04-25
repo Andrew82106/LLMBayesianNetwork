@@ -94,7 +94,7 @@ def evaluateSVM(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
     return res_list
 
 
-if __name__ == "__main__":
+def compareTwoModels(expertResultPKLName, llmResultPKLName, AimColumn='Loss', save=True):
     finalLabRes = {
         "eps": [],
         "dataset": [],
@@ -103,10 +103,11 @@ if __name__ == "__main__":
         "f1": [],
         "precision": [],
         "recall": [],
+        "llmName": []
     }
-    AimColumn = 'RecoverTime'
-    expertResult = generateExpertResult('ExpertResult_labData_time=2025-04-2509_15_59.pkl')
-    llmResult = generateLLMResult('labData_time=2025-04-22_18-04-22.pkl')
+    expertResult = generateExpertResult(expertResultPKLName)
+    llmResult = generateLLMResult(llmResultPKLName)
+    llmName = llmResult['parameter']['LLM_TYPE']
 
     # Criminal result evaluation
     expGraph: BayesianNetwork = expertResult['result']['Graph']['Criminalhuman'][1]
@@ -154,6 +155,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in llmF1resCriminal:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Criminal")
@@ -162,6 +164,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append(llmName)
     for res in RFresCriminal:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Criminal")
@@ -170,6 +173,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in DTresCriminal:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Criminal")
@@ -178,6 +182,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in KNNresCriminal:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Criminal")
@@ -186,6 +191,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in SVMresCriminal:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Criminal")
@@ -194,7 +200,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])        
-        
+        finalLabRes["llmName"].append("None")
     # pprint.pprint(expF1resCriminal)
     # pprint.pprint(llmF1resCriminal)
     # pprint.pprint(RFresCriminal)
@@ -208,6 +214,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in llmF1resVictim:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Victim")
@@ -216,6 +223,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append(llmName)
     for res in RFresVictim:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Victim")
@@ -224,6 +232,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in DTresVictim:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Victim")
@@ -232,6 +241,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in KNNresVictim:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Victim")
@@ -240,6 +250,7 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
     for res in SVMresVictim:
         finalLabRes["eps"].append(res["eps"])
         finalLabRes["dataset"].append("Victim")
@@ -248,9 +259,37 @@ if __name__ == "__main__":
         finalLabRes["f1"].append(res["result"]["f1"])
         finalLabRes["precision"].append(res["result"]["precision"])
         finalLabRes["recall"].append(res["result"]["recall"])
-        
+        finalLabRes["llmName"].append("None")
+
     # pprint.pprint(expF1resVictim)
     # pprint.pprint(llmF1resVictim)
     # pprint.pprint(RFresVictim)
+    if save:
+        pd.DataFrame(finalLabRes).to_csv(os.path.join(cfg.final_output_path, f"finalLabRes_AimColumn_{expertResultPKLName}_{llmResultPKLName}_{AimColumn}.csv"), index=False)
+    return finalLabRes
 
-    pd.DataFrame(finalLabRes).to_csv(os.path.join(cfg.final_output_path, f"finalLabRes_AimColumn_{AimColumn}.csv"), index=False)
+
+if __name__ == "__main__":
+    pklList = os.listdir(cfg.final_output_path)
+    expertPKLList = []
+    llmPKLList = []
+    for pkl in pklList:
+        if pkl.endswith('.pkl'):
+            if "Expert" in pkl:
+                expertPKLList.append(pkl)
+            elif "labData" in pkl:
+                llmPKLList.append(pkl)
+    
+    dfList = []
+    for expertPKL in expertPKLList:
+        for llmPKL in llmPKLList:
+            result_dict = compareTwoModels(expertPKL, llmPKL, AimColumn='Loss', save=False)
+            # 将字典转换为DataFrame后再添加到列表中
+            df = pd.DataFrame(result_dict)
+            dfList.append(df)
+    
+    # 现在dfList中只包含DataFrame对象，可以安全地使用pd.concat
+    df = pd.concat(dfList)
+    # 去重
+    df = df.drop_duplicates()
+    df.to_csv(os.path.join(cfg.final_output_path, "finalLabRes_AimColumn_all.csv"), index=False)
