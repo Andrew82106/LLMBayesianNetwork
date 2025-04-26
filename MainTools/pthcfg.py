@@ -23,6 +23,7 @@ class PathConfig:
         # 缓存文件夹
         self.cache_path = os.path.join(self.assets_path, "cache")
         self.final_output_path = os.path.join(self.database_path, "output")
+        self.figure_output_path = os.path.join(self.final_output_path, "fig")
 
         sys.path.append(self.main_tools_path)
         sys.path.append(self.database_path)
@@ -31,6 +32,7 @@ class PathConfig:
         sys.path.append(self.log_pth)
         sys.path.append(self.cache_path)
         sys.path.append(self.log_pth)
+        sys.path.append(self.figure_output_path)
 
         if not os.path.exists(self.log_pth):
             os.makedirs(self.log_pth)

@@ -1,15 +1,20 @@
 from pthcfg import *
 cfg = PathConfig()
 
+import time
 import tqdm
 import json
 import os
 import pandas as pd
+import numpy as np
+from pgmpy.factors.discrete import TabularCPD
 from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator
 from pgmpy.inference import VariableElimination
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
+from otherMethodsEvaluate import randomForestPredict, decisionTreePredict, knnPredict, svmPredict
+
 
 
 def loadMap(role, mode='eng2chi'):
@@ -302,3 +307,232 @@ def enhanced_graphSelfEvaluate(bnn: BayesianNetwork,
     metrics = {'precision': precision, 'recall': recall, 'f1': f1}
     print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
     return metrics
+
+
+def evaluateF1(aimGraph: BayesianNetwork, dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
+    res_list = []
+    for eps in epsList:
+        evaluateResult = enhanced_graphSelfEvaluate(
+            aimGraph,
+            aimColumn,
+            dataPath,
+            test_size=eps,
+            random_state=(time.time_ns()) % 4294967295
+        )
+        res_list.append({"result": evaluateResult, "eps": eps})
+    return res_list
+
+
+def evaluateRandomForest(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
+    res_list = []
+    for eps in epsList:
+        res_ = randomForestPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
+    return res_list
+
+def evaluateDecisionTree(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
+    res_list = []
+    for eps in epsList:
+        res_ = decisionTreePredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
+    return res_list
+
+def evaluateKNN(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
+    res_list = []
+    for eps in epsList:
+        res_ = knnPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
+    return res_list
+
+def evaluateSVM(dataPath: str, epsList=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], aimColumn='Loss'):
+    res_list = []
+    for eps in epsList:
+        res_ = svmPredict(dataPath, aimColumn, test_size=eps)
+        res_list.append({"result": res_, "eps": eps})
+    return res_list
+
+
+def compareTwoModels(expertResultPKLName, llmResultPKLName, expertResult, llmResult, AimColumn='Loss', save=True):
+    finalLabRes = {
+        "eps": [],
+        "dataset": [],
+        "expertType": [],
+        "model": [],
+        "f1": [],
+        "precision": [],
+        "recall": [],
+        "llmName": []
+    }
+    # expertResult = generateExpertResult(expertResultPKLName)
+    # llmResult = generateLLMResult(llmResultPKLName)
+    llmName = llmResult['parameter']['LLM_TYPE']
+
+    # Criminal result evaluation
+    expGraph: BayesianNetwork = expertResult['result']['Graph']['Criminalhuman'][1]
+    expGraph.remove_node("CallPolice")
+
+    llmGraph: BayesianNetwork = llmResult['result']['Graph']['Criminalllm'][1]
+    llmGraph.remove_node("CallPolice")
+
+    expF1resCriminal = evaluateF1(expGraph, os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
+                                  aimColumn=AimColumn)
+    llmF1resCriminal = evaluateF1(llmGraph, os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
+                                  aimColumn=AimColumn)
+
+    # Victim result evaluation
+    expGraph: BayesianNetwork = expertResult['result']['Graph']['Victimhuman'][1]
+    expGraph.remove_node("CallPolice")
+
+    llmGraph: BayesianNetwork = llmResult['result']['Graph']['Victimllm'][1]
+    llmGraph.remove_node("CallPolice")
+
+    expF1resVictim = evaluateF1(expGraph, os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                                aimColumn=AimColumn)
+    llmF1resVictim = evaluateF1(llmGraph, os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                                aimColumn=AimColumn)
+
+    # 随机森林预测
+    RFresCriminal = evaluateRandomForest(os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
+                                         aimColumn=AimColumn)
+    RFresVictim = evaluateRandomForest(os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                                       aimColumn=AimColumn)
+
+    # 决策树预测
+    DTresCriminal = evaluateDecisionTree(os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"),
+                                         aimColumn=AimColumn)
+    DTresVictim = evaluateDecisionTree(os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                                       aimColumn=AimColumn)
+
+    # KNN预测
+    KNNresCriminal = evaluateKNN(os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"), aimColumn=AimColumn)
+    KNNresVictim = evaluateKNN(os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                               aimColumn=AimColumn)
+
+    # SVM预测
+    SVMresCriminal = evaluateSVM(os.path.join(cfg.database_path, "bayesian_criminal_filled.csv"), aimColumn=AimColumn)
+    SVMresVictim = evaluateSVM(os.path.join(cfg.database_path, "bayesian_victim_and_others_filled.csv"),
+                               aimColumn=AimColumn)
+
+    print("Criminal result evaluation:")
+    for res in expF1resCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("Bayesian Network")
+        finalLabRes["expertType"].append("human")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in llmF1resCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("Bayesian Network")
+        finalLabRes["expertType"].append("llm")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append(llmName)
+    for res in RFresCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("Random Forest")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in DTresCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("Decision Tree")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in KNNresCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("KNN")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in SVMresCriminal:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Criminal")
+        finalLabRes["model"].append("SVM")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    # pprint.pprint(expF1resCriminal)
+    # pprint.pprint(llmF1resCriminal)
+    # pprint.pprint(RFresCriminal)
+
+    print("Victim result evaluation:")
+    for res in expF1resVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("Bayesian Network")
+        finalLabRes["expertType"].append("human")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in llmF1resVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("Bayesian Network")
+        finalLabRes["expertType"].append("llm")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append(llmName)
+    for res in RFresVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("Random Forest")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in DTresVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("Decision Tree")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in KNNresVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("KNN")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+    for res in SVMresVictim:
+        finalLabRes["eps"].append(res["eps"])
+        finalLabRes["dataset"].append("Victim")
+        finalLabRes["model"].append("SVM")
+        finalLabRes["expertType"].append("Non-expert")
+        finalLabRes["f1"].append(res["result"]["f1"])
+        finalLabRes["precision"].append(res["result"]["precision"])
+        finalLabRes["recall"].append(res["result"]["recall"])
+        finalLabRes["llmName"].append("None")
+
+    # pprint.pprint(expF1resVictim)
+    # pprint.pprint(llmF1resVictim)
+    # pprint.pprint(RFresVictim)
+    if save:
+        pd.DataFrame(finalLabRes).to_csv(os.path.join(cfg.final_output_path,
+                                                      f"finalLabRes_AimColumn_{expertResultPKLName}_{llmResultPKLName}_{AimColumn}.csv"),
+                                         index=False)
+    return finalLabRes
