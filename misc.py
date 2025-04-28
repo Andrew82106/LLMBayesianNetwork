@@ -30,6 +30,7 @@ for ExpertRoute in ExpertList:
         llmPKL = readOutputPkl(os.path.join(pthcfg.final_output_path, llmRoute))
         G2 = llmPKL['result']['Graph']['Criminalllm'][1]
         F1, P, R = calc_graph_f1(G1.edges(), G2.edges())
+        print(F1, P, R)
         if F1 > maxF1:
             maxF1 = F1
             maxExpertRoute = ExpertRoute
@@ -56,7 +57,7 @@ G2 = pklData['result']['Graph']['Criminalllm'][1]
 
 print(pklData['parameter'])
 
-print(calc_graph_f1(G1.edges(), G2.edges()))
+# print(calc_graph_f1(G1.edges(), G2.edges()))
 
 
 ExpertBayesianNetworkCriminal = readOutputPkl(os.path.join(pthcfg.final_output_path, "ExpertBayesianNetworkCriminal.pkl"))
@@ -67,3 +68,22 @@ LLMBayesianNetworkCriminal = readOutputPkl(os.path.join(pthcfg.final_output_path
 visualize_bayesian_network(LLMBayesianNetworkCriminal['result']['Graph']['Criminalllm'][1], os.path.join(pthcfg.figure_output_path, "Criminalllm.png"))
 LLMBayesianNetworkVictim = readOutputPkl(os.path.join(pthcfg.final_output_path, "LLMBayesianNetworkVictim.pkl"))
 visualize_bayesian_network(LLMBayesianNetworkVictim['result']['Graph']['Victimllm'][1], os.path.join(pthcfg.figure_output_path, "Victimllm.png"))
+
+ExpertCriminalGList = list(ExpertBayesianNetworkCriminal['result']['Graph']['Criminalhuman'][1].edges())
+LLMCriminalGList = list(LLMBayesianNetworkCriminal['result']['Graph']['Criminalllm'][1].edges())
+print("嫌疑人模型专家与大语言模型对比:" , calc_graph_f1(ExpertCriminalGList, LLMCriminalGList))
+ExpertVictimGList = list(ExpertBayesianNetworkVictim['result']['Graph']['Victimhuman'][1].edges())
+LLMVictimGList = list(LLMBayesianNetworkVictim['result']['Graph']['Victimllm'][1].edges())
+print("受害者模型专家与大语言模型对比:" , calc_graph_f1(ExpertVictimGList, LLMVictimGList))
+
+LLMCriminalGList.append(("SuspectAge", "RecoverTime"))
+LLMCriminalGList.append(("SuspectAge", "SuspectGender"))
+LLMCriminalGList.append(("SuspectEducation", "CommunicationMethod"))
+
+print("嫌疑人模型专家与大语言模型对比(DS前):" , calc_graph_f1(ExpertCriminalGList, LLMCriminalGList))
+
+LLMVictimGList.append(('VictimSex', 'CityEconomy'))
+LLMVictimGList.append(('VictimSex', 'CommunicationMethod'))
+LLMVictimGList.append(('SpecialDate', 'VictimOccupation'))
+LLMVictimGList.append(('VictimEducation', 'SpecialDate'))
+print("受害者模型专家与大语言模型对比(DS前):" , calc_graph_f1(ExpertVictimGList, LLMVictimGList))
